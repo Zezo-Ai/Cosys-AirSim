@@ -548,13 +548,16 @@ void APIPCamera::updateInstanceSegmentationAnnotation(TArray<TWeakObjectPtr<UPri
 }
 
 void APIPCamera::updateAnnotation(TArray<TWeakObjectPtr<UPrimitiveComponent> >& ComponentList, FString annotation_name, bool only_hide) {
+  if (!annotator_name_to_index_map_.Contains(annotation_name))
+  {
+    return;
+  }
     if (!only_hide) {
         captures_[annotator_name_to_index_map_[annotation_name]]->ShowOnlyComponents = ComponentList;
         if (sphere_annotation_component_map_.Contains(annotation_name))
             captures_[annotator_name_to_index_map_[annotation_name]]->ShowOnlyComponents.Add(sphere_annotation_component_map_[annotation_name]);
-    }   
+    }
     APlayerController* controller = this->GetWorld()->GetFirstPlayerController();
-
     for (TWeakObjectPtr<UPrimitiveComponent> component : ComponentList) {
         captures_[Utils::toNumeric(ImageType::Scene)]->HiddenComponents.AddUnique(component);
         captures_[Utils::toNumeric(ImageType::Lighting)]->HiddenComponents.AddUnique(component);

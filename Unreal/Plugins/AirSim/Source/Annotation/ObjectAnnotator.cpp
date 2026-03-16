@@ -977,22 +977,18 @@ void FObjectAnnotator::InitializeTexture(ULevel* InLevel)
 					FString tag = found_tag->ToString();
 					TArray<FString> splitTag;
 					tag.ParseIntoArray(splitTag, TEXT("_"), true);
-					name_to_component_map_.Emplace(it.Key(), it.Value());
-					component_to_name_map_.Emplace(it.Value(), it.Key());
-
+					
 					FString new_texture;
 
 					if (set_direct_) {
 						new_texture = splitTag[1];
-					}
-					else {
+					} else {
 						FString component_name;
 						if (UStaticMeshComponent* staticmesh_component = Cast<UStaticMeshComponent>(it.Value())) {
 							if (staticmesh_component->GetStaticMesh() != nullptr) {
 								component_name = staticmesh_component->GetStaticMesh()->GetName();
 							}
-						}
-						else if (USkinnedMeshComponent* skinnedmesh_component = Cast<USkinnedMeshComponent>(it.Value())) {
+						} else if (USkinnedMeshComponent* skinnedmesh_component = Cast<USkinnedMeshComponent>(it.Value())) {
 							if (skinnedmesh_component->GetSkinnedAsset() != nullptr) {
 								component_name = skinnedmesh_component->GetSkinnedAsset()->GetName();
 							}
@@ -1003,6 +999,7 @@ void FObjectAnnotator::InitializeTexture(ULevel* InLevel)
 					check(PaintTextureComponent(it.Value(), new_texture, it.Key()));
 					if (set_direct_) {
 						//UE_LOG(LogTemp, Log, TEXT("AirSim Annotation [%s]: Added new texture annotated object %s with texture: %s"), *name_, *it.Key(), *new_texture);
+
 					}
 					else {
 						//UE_LOG(LogTemp, Log, TEXT("AirSim Annotation [%s]: Added new texture annotated object %s with texture: %s"), *name_, *it.Key(), *new_texture);
@@ -1207,6 +1204,10 @@ void FObjectAnnotator::UpdateAnnotationComponents(UWorld* World)
 }
 
 TArray<TWeakObjectPtr<UPrimitiveComponent>>  FObjectAnnotator::GetAnnotationComponents() {
+	annotation_component_list_.RemoveAll([](const TWeakObjectPtr<UPrimitiveComponent>& Component)
+	{
+		return !Component.IsValid();
+	});
 	return annotation_component_list_;
 }
 

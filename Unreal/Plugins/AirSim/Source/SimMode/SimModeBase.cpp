@@ -1247,6 +1247,7 @@ void ASimModeBase::ForceUpdateAnnotation(FString annotation_name) {
 }
 
 void ASimModeBase::updateInstanceSegmentationAnnotation() {
+	instance_segmentation_annotator_.UpdateAnnotationComponents(this->GetWorld());
     TArray<TWeakObjectPtr<UPrimitiveComponent>> current_segmentation_components = instance_segmentation_annotator_.GetAnnotationComponents();
 
     TArray<AActor*> cameras_found;
@@ -1287,6 +1288,7 @@ void ASimModeBase::updateAnnotation(FString annotation_name) {
         UE_LOG(LogTemp, Log, TEXT("AirSim Annotation [%s]: Could not find annotation layer %s"), *annotation_name, *annotation_name);
     }
     else {
+		annotators_[annotation_name].UpdateAnnotationComponents(this->GetWorld());
         TArray<TWeakObjectPtr<UPrimitiveComponent>> current_annotation_components = annotators_[annotation_name].GetAnnotationComponents();
         TArray<AActor*> cameras_found;
         UAirBlueprintLib::RunCommandOnGameThread([this, &cameras_found]() {
@@ -1313,13 +1315,13 @@ void ASimModeBase::updateAnnotation(FString annotation_name) {
         }
         if (CameraDirector != nullptr) {
             if (CameraDirector->getFpvCamera() != nullptr)
-                CameraDirector->getFpvCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
+        CameraDirector->getFpvCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
             if (CameraDirector->getExternalCamera() != nullptr)
-                CameraDirector->getExternalCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
+        CameraDirector->getExternalCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
             if (CameraDirector->getBackupCamera() != nullptr)
-                CameraDirector->getBackupCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
+        CameraDirector->getBackupCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
             if (CameraDirector->getFrontCamera() != nullptr)
-                CameraDirector->getFrontCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
+        CameraDirector->getFrontCamera()->updateInstanceSegmentationAnnotation(current_annotation_components, true);
         }
     }
 }
