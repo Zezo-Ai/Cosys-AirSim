@@ -518,6 +518,37 @@ FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteSkeletal(USkel
 	return ::new FNaniteSkeletalAnnotationSceneProxy(SkeletalMeshComponent, this, SkelMeshRenderData, AnnotationMID);
 }
 
+FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteInstancedSkeletal(USkinnedMeshComponent* InstancedMeshComponent)
+{
+	FSkeletalMeshRenderData* SkelMeshRenderData = InstancedMeshComponent->GetSkeletalMeshRenderData();
+	if (!SkelMeshRenderData || SkelMeshRenderData->LODRenderData.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AirSim Annotation: Nanite instanced skinned proxy creation skipped for %s - render data not ready"),
+			*InstancedMeshComponent->GetName());
+		return nullptr;
+	}
+	if (!IsValid(AnnotationMID))
+	{
+		return nullptr;
+	}
+	// MeshObject must be valid — it's set up by the component's CreateRenderState_Concurrent.
+	// If null, the render state hasn't been created yet; return nullptr and rely on TickComponent to retry.
+	if (!InstancedMeshComponent->MeshObject)
+	{
+		return nullptr;
+	}
+	const USkeletalMesh* SkeletalMeshAsset = Cast<USkeletalMesh>(InstancedMeshComponent->GetSkinnedAsset());
+	if (!SkeletalMeshAsset || !SkeletalMeshAsset->IsNaniteEnabled())
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("AirSim Annotation: Skipping non-Nanite instanced skinned mesh %s"), *InstancedMeshComponent->GetName());
+		return nullptr;
+	}
+	UE_LOG(LogTemp, Verbose, TEXT("AirSim Annotation: Creating Nanite instanced skeletal annotation proxy for %s"), *InstancedMeshComponent->GetName());
+	// Share the existing MeshObject (already set up by the component's CreateRenderState_Concurrent)
+	// via FSkinnedMeshSceneProxyDesc. This means all instances' skinning data is available to Nanite.
+	return ::new FNaniteSkeletalAnnotationSceneProxy(InstancedMeshComponent, this, SkelMeshRenderData, AnnotationMID);
+}
+
 FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy(UStaticMeshComponent* StaticMeshComponent)
 {
 	UMaterialInterface* ProxyMaterial = AnnotationMID; // Material Instance Dynamic
@@ -571,11 +602,22 @@ FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy()
 
 	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(ParentComponent);
 	USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ParentComponent);
+	// UInstancedSkinnedMeshComponent inherits from USkinnedMeshComponent but NOT USkeletalMeshComponent.
+	// We detect it without including its experimental header (which causes C3837 on MSVC) by checking
+	// that the component is a USkinnedMeshComponent but not a USkeletalMeshComponent.
+	USkinnedMeshComponent* SkinnedMeshComponent = Cast<USkinnedMeshComponent>(ParentComponent);
+	const bool bIsInstancedSkinnedMesh = IsValid(SkinnedMeshComponent) && !IsValid(SkeletalMeshComponent);
 
 	if (IsValid(StaticMeshComponent))
 	{
 		bSkeletalMesh = false;
 		return CreateSceneProxy(StaticMeshComponent);
+	}
+	else if (bIsInstancedSkinnedMesh)
+	{
+		FPrimitiveSceneProxy* Proxy = CreateSceneProxyNaniteInstancedSkeletal(SkinnedMeshComponent);
+		bSkeletalMesh = (Proxy != nullptr);
+		return Proxy;
 	}
 	else if (IsValid(SkeletalMeshComponent))
 	{
@@ -609,7 +651,7 @@ FBoxSphereBounds UAnnotationComponent::CalcBounds(const FTransform & LocalToWorl
 		return StaticMeshComponent->CalcBounds(LocalToWorld);
 	}
 
-	USkeletalMeshComponent* SkinnedMeshComponent = Cast<USkeletalMeshComponent>(Parent);
+	USkinnedMeshComponent* SkinnedMeshComponent = Cast<USkinnedMeshComponent>(Parent);
 	if (IsValid(SkinnedMeshComponent))
 	{
 		return SkinnedMeshComponent->CalcBounds(LocalToWorld);
@@ -633,10 +675,11 @@ void UAnnotationComponent::TickComponent(
 	if (bSkeletalMesh)
 	{
 		USceneComponent* ParentComponent = this->GetAttachParent();
-		USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ParentComponent);
-		if (SkeletalMeshComponent)
+		// Use USkinnedMeshComponent to cover both USkeletalMeshComponent and UInstancedSkinnedMeshComponent
+		USkinnedMeshComponent* SkinnedMeshComponent = Cast<USkinnedMeshComponent>(ParentComponent);
+		if (SkinnedMeshComponent)
 		{
-			// Update render state for both regular and Nanite skeletal meshes
+			// Update render state for regular, Nanite, and instanced skeletal meshes
 			// This ensures animations and deformations are properly synced
 			MarkRenderStateDirty();
 		}

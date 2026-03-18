@@ -18,7 +18,6 @@
 
 #include "AnnotationComponent.generated.h"
 
-
 // TODO: Might need to annotate every frame if there are new actors got spawned
 /** A proxy component class to render annotation color
  * Should be attached to a MeshComponent to provide annotation color for AnnotationCamSensor
@@ -91,4 +90,5 @@ private:
 	FPrimitiveSceneProxy* CreateSceneProxy(UStaticMeshComponent* StaticMeshComponent);
 	FPrimitiveSceneProxy* CreateSceneProxy(USkeletalMeshComponent* SkeletalMeshComponent);
 	FPrimitiveSceneProxy* CreateSceneProxyNaniteSkeletal(USkeletalMeshComponent* SkeletalMeshComponent);
+	FPrimitiveSceneProxy* CreateSceneProxyNaniteInstancedSkeletal(USkinnedMeshComponent* InstancedMeshComponent);
 };
