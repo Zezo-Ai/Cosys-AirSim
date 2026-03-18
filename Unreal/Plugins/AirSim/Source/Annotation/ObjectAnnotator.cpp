@@ -1266,6 +1266,7 @@ void FObjectAnnotator::EndPlay() {
 	component_to_name_map_.Empty();
 }
 
+
 int32 FColorGenerator::GetChannelValue(uint32 index)
 {
 	static int32 values[256] = { 0 };

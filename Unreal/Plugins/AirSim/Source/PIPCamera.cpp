@@ -150,6 +150,8 @@ void APIPCamera::PostInitializeComponents()
 
     FObjectAnnotator::SetViewForAnnotationRender(captures_[Utils::toNumeric(ImageType::Segmentation)]->ShowFlags);
     captures_[Utils::toNumeric(ImageType::Segmentation)]->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
+    // Initialize ShowOnlyComponents as empty - will be populated by UpdateAnnotationComponentsFromObjectAnnotator
+    captures_[Utils::toNumeric(ImageType::Segmentation)]->ShowOnlyComponents.Empty();
 
     captures_[Utils::toNumeric(ImageType::Lighting)]->ShowFlags.SetLighting(true);
     captures_[Utils::toNumeric(ImageType::Lighting)]->ShowFlags.SetMaterials(false);
@@ -1321,4 +1323,28 @@ void APIPCamera::copyCameraSettingsToSceneCapture(UCameraComponent* src, USceneC
     }
 }
 
-//end CinemAirSim methods
+//end CinemAirSim
+
+void APIPCamera::updateAnnotationComponentsFromObjectAnnotator(FObjectAnnotator& annotator, const FString& annotator_name) {
+    // Get annotation components from ObjectAnnotator and set them in the appropriate scene capture
+    TArray<TWeakObjectPtr<UPrimitiveComponent>> annotation_components = annotator.GetAnnotationComponents();
+    
+    UE_LOG(LogTemp, Log, TEXT("updateAnnotationComponentsFromObjectAnnotator: Found %d annotation components"), annotation_components.Num());
+    
+    if (annotator_name.IsEmpty() || annotator_name.Equals(TEXT("InstanceSegmentation"), ESearchCase::IgnoreCase)) {
+        // Update instance segmentation (RGB annotation)
+        UE_LOG(LogTemp, Log, TEXT("updateAnnotationComponentsFromObjectAnnotator: Adding to InstanceSegmentation scene capture"));
+        updateInstanceSegmentationAnnotation(annotation_components, false);
+    }
+    else {
+        // Update named annotation camera
+        UE_LOG(LogTemp, Log, TEXT("updateAnnotationComponentsFromObjectAnnotator: Adding to annotation camera '%s'"), *annotator_name);
+        updateAnnotation(annotation_components, annotator_name, false);
+    }
+    
+    if (Utils::toNumeric(ImageType::Segmentation) < captures_.Num()) {
+        UE_LOG(LogTemp, Log, TEXT("updateAnnotationComponentsFromObjectAnnotator: Completed. Scene capture ShowOnlyComponents has %d items"), 
+            captures_[Utils::toNumeric(ImageType::Segmentation)]->ShowOnlyComponents.Num());
+    }
+}
+

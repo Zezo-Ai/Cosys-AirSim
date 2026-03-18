@@ -23,13 +23,6 @@
 #endif
 #include "Runtime/Engine/Public/Rendering/SkeletalMeshRenderData.h"
 
-// Console variable to enable/disable Nanite skeletal annotation support
-static TAutoConsoleVariable<int32> CVarAirSimAnnotationNaniteSkeletal(
-	TEXT("airsim.annotation.nanite.skeletal"),
-	1,
-	TEXT("Enable Nanite skeletal mesh annotation support (default: 1)")
-);
-
 /** A proxy class to get mesh data from StaticMesh, should be used together with AnnotationCamSensor.
 Inheritance is needed because I need to access protected data
 Use `show Material` command to see the effect of this component
@@ -152,59 +145,60 @@ public:
 		FMeshElementCollector& Collector) const;
 };
 
-// Custom Nanite skeletal annotation proxy that uses Nanite rendering pipeline
-// but overrides material rendering to apply annotation colors
+// Nanite skeletal mesh annotation proxy.
+// Uses Nanite's own rendering pipeline so it works correctly in annotation cameras
+// (ShowFlags.Materials=false does NOT disable Nanite shading — Nanite is gated by NaniteMeshes).
+// GetViewRelevance hides this proxy from the main viewport (Materials=true) so no duplicate
+// copies appear alongside the original Nanite mesh.
+//
+// IMPORTANT: The proxy is constructed from SkeletalMeshComponent (for mesh/skin data) but
+// overrides ComponentId to use AnnotationComponent's ID. This prevents a PrimitiveComponentId
+// conflict with the original Nanite proxy and ensures ShowOnlyComponents/HiddenComponents
+// filtering correctly identifies this proxy as belonging to the UAnnotationComponent.
 class FNaniteSkeletalAnnotationSceneProxy : public Nanite::FSkinnedSceneProxy
 {
 public:
 	FNaniteSkeletalAnnotationSceneProxy(
-		const USkinnedMeshComponent* Component,
+		const USkinnedMeshComponent* SkeletalMeshComponent,
+		const UPrimitiveComponent* AnnotationComponent,
 		FSkeletalMeshRenderData* InRenderData,
 		UMaterialInterface* AnnotationMID
 	)
-		: Nanite::FSkinnedSceneProxy(CreateNaniteMaterialAudit(Component), Component, InRenderData, true)
-		, AnnotationMaterial(AnnotationMID)
+		: Nanite::FSkinnedSceneProxy(
+			CreateNaniteMaterialAudit(SkeletalMeshComponent),
+			CreateAnnotationDesc(SkeletalMeshComponent, AnnotationComponent),
+			InRenderData,
+			true)
 	{
-
 		if (!IsValid(AnnotationMID))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Airsim Annotation: Nanite skeletal annotation material is invalid"));
+			UE_LOG(LogTemp, Warning, TEXT("AirSim Annotation: Nanite skeletal annotation material is invalid"));
 			return;
 		}
 
 		FMaterialRenderProxy* AnnotationRenderProxy = AnnotationMID->GetRenderProxy();
-		const FMaterialRelevance AnnotationRelevance = AnnotationMID->GetRelevance_Concurrent(GetScene().GetShaderPlatform());
-		int32 UpdatedSectionCount = 0;
 		for (Nanite::FSceneProxyBase::FMaterialSection& MaterialSection : GetMaterialSections())
 		{
-			MaterialSection.ShadingMaterialProxy = AnnotationRenderProxy;
-			MaterialSection.RasterMaterialProxy = AnnotationRenderProxy;
-			MaterialSection.MaterialRelevance = AnnotationRelevance;
-			MaterialSection.LocalUVDensities = FVector4f(1.0f);
-			MaterialSection.bHasPerInstanceRandomID = false;
-			MaterialSection.bHasPerInstanceCustomData = false;
-			++UpdatedSectionCount;
+			if (!MaterialSection.bHidden)
+			{
+				MaterialSection.ShadingMaterialProxy = AnnotationRenderProxy;
+			}
 		}
-
-		OnMaterialsUpdated(true);
-		UE_LOG(LogTemp, VeryVerbose, TEXT("Airsim Annotation: Nanite skeletal proxy remapped %d material sections to %s"), UpdatedSectionCount, *AnnotationMID->GetName());
+		OnMaterialsUpdated();
 	}
 
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override
 	{
-		// Hide from main pass (regular scene/lighting cameras) - only show in annotation scene captures
+		// Hide from main pass and RGB cameras (Materials=true) to avoid duplicating the original mesh.
+		// Annotation cameras set Materials=false — Nanite still shades normally in that mode,
+		// so the annotation color is correctly applied there.
 		if (View->Family->EngineShowFlags.Materials)
 		{
 			FPrimitiveViewRelevance ViewRelevance;
 			ViewRelevance.bDrawRelevance = 0;
 			return ViewRelevance;
 		}
-		
-		// Show in annotation passes (where Materials flag is OFF)
-		FPrimitiveViewRelevance ViewRelevance = Nanite::FSkinnedSceneProxy::GetViewRelevance(View);
-		// Ensure it's marked as relevant for rendering in annotation-only context
-		ViewRelevance.bDrawRelevance = 1;
-		return ViewRelevance;
+		return Nanite::FSkinnedSceneProxy::GetViewRelevance(View);
 	}
 
 private:
@@ -215,13 +209,21 @@ private:
 		{
 			Nanite::AuditMaterials(Component, Audit, false);
 		}
-
-		UE_LOG(LogTemp, VeryVerbose, TEXT("Airsim Annotation: Created Nanite material audit with %d entries"), Audit.Entries.Num());
-
 		return Audit;
 	}
 
-	UMaterialInterface* AnnotationMaterial;
+	// Creates a proxy desc from the skeletal mesh but overrides ComponentId to match
+	// the annotation component. This ensures the proxy is correctly identified for
+	// ShowOnlyComponents/HiddenComponents filtering without conflicting with the
+	// original Nanite skeletal proxy (which uses SkeletalMeshComponent's ComponentId).
+	static FSkinnedMeshSceneProxyDesc CreateAnnotationDesc(
+		const USkinnedMeshComponent* SkeletalMeshComponent,
+		const UPrimitiveComponent* AnnotationComponent)
+	{
+		FSkinnedMeshSceneProxyDesc Desc(SkeletalMeshComponent);
+		Desc.ComponentId = AnnotationComponent->GetPrimitiveSceneId();
+		return Desc;
+	}
 };
 
 
@@ -263,8 +265,6 @@ UAnnotationComponent::UAnnotationComponent(const FObjectInitializer& ObjectIniti
 {
 	bSkeletalMesh = false;
 	bTexture = false;
-	// Initialize from console variable - can be overridden per-component with SetEnableNaniteSkeletalAnnotationPath()
-	bEnableNaniteSkeletalAnnotationPath = CVarAirSimAnnotationNaniteSkeletal.GetValueOnGameThread() != 0;
 	last_foliage_type_ = EFoliageComponentType::None;
 
 	FString MaterialPath = TEXT("Material'/AirSim/HUDAssets/AnnotationMaterial.AnnotationMaterial'");
@@ -297,6 +297,15 @@ UAnnotationComponent::UAnnotationComponent(const FObjectInitializer& ObjectIniti
 void UAnnotationComponent::OnRegister()
 {
 	Super::OnRegister();
+
+	// Ensure the annotation material supports Nanite skeletal mesh shading.
+	// Nanite checks both MATUSAGE_Nanite and MATUSAGE_SkeletalMesh (NaniteResources.cpp:2535).
+	// In the editor, CheckMaterialUsage sets the flag and triggers a one-time shader recompile if needed.
+	if (AnnotationMaterial)
+	{
+		AnnotationMaterial->CheckMaterialUsage(MATUSAGE_Nanite);
+		AnnotationMaterial->CheckMaterialUsage(MATUSAGE_SkeletalMesh);
+	}
 
 	if (this->GetFName().ToString().Contains("annotation_sphere")) {
 		AnnotationMID = UMaterialInstanceDynamic::Create(SphereMaterial, this, TEXT("AnnotationMaterialMID"));
@@ -426,16 +435,6 @@ UAnnotationComponent::EFoliageComponentType UAnnotationComponent::GetLastDetecte
 	return last_foliage_type_;
 }
 
-void UAnnotationComponent::SetEnableNaniteSkeletalAnnotationPath(bool bEnable)
-{
-	bEnableNaniteSkeletalAnnotationPath = bEnable;
-}
-
-bool UAnnotationComponent::IsNaniteSkeletalAnnotationPathEnabled() const
-{
-	return bEnableNaniteSkeletalAnnotationPath;
-}
-
 UAnnotationComponent::EFoliageComponentType UAnnotationComponent::ClassifyFoliageType(const USceneComponent* Component)
 {
 	const UMeshComponent* MeshComponent = Cast<UMeshComponent>(Component);
@@ -496,9 +495,27 @@ bool UAnnotationComponent::IsNaniteSkeletalMesh(const USkeletalMeshComponent* Sk
 	{
 		return false;
 	}
-
 	const USkeletalMesh* SkeletalMeshAsset = SkeletalMeshComponent->GetSkeletalMeshAsset();
 	return SkeletalMeshAsset && SkeletalMeshAsset->IsNaniteEnabled();
+}
+
+FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteSkeletal(USkeletalMeshComponent* SkeletalMeshComponent)
+{
+	FSkeletalMeshRenderData* SkelMeshRenderData = SkeletalMeshComponent->GetSkeletalMeshRenderData();
+	if (!SkelMeshRenderData || !SkelMeshRenderData->LODRenderData.IsValidIndex(SkeletalMeshComponent->GetPredictedLODLevel()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AirSim Annotation: Nanite skeletal proxy creation skipped for %s - render data not ready (LOD level %d)"),
+			*SkeletalMeshComponent->GetName(), SkeletalMeshComponent->GetPredictedLODLevel());
+		return nullptr;
+	}
+	if (!IsValid(AnnotationMID))
+	{
+		return nullptr;
+	}
+	UE_LOG(LogTemp, Verbose, TEXT("AirSim Annotation: Creating Nanite skeletal annotation proxy for %s"), *SkeletalMeshComponent->GetName());
+	// Pass 'this' (UAnnotationComponent) as the annotation component so the proxy gets the
+	// correct PrimitiveComponentId, preventing conflicts with the original Nanite proxy.
+	return ::new FNaniteSkeletalAnnotationSceneProxy(SkeletalMeshComponent, this, SkelMeshRenderData, AnnotationMID);
 }
 
 FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy(UStaticMeshComponent* StaticMeshComponent)
@@ -512,27 +529,19 @@ FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy(UStaticMeshComponen
 		return NULL;
 	}
 
-
+	UE_LOG(LogTemp, VeryVerbose, TEXT("AirSim Annotation: Creating FStaticAnnotationSceneProxy for %s"), *StaticMeshComponent->GetName());
 	FPrimitiveSceneProxy* Proxy = ::new FStaticAnnotationSceneProxy(StaticMeshComponent, false, ProxyMaterial);
 	return Proxy;
 }
 
 FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy(USkeletalMeshComponent* SkeletalMeshComponent)
 {
+	// Nanite skeletal meshes must use FNaniteSkeletalAnnotationSceneProxy.
+	// FSkeletalMeshSceneProxy cannot be used with FSkeletalMeshObjectNanite because
+	// Nanite does not initialize the traditional GPU skin vertex factories (only for ray tracing),
+	// leading to null uniform buffer crashes in the non-Nanite rendering path.
 	if (IsNaniteSkeletalMesh(SkeletalMeshComponent))
 	{
-
-		if (!bEnableNaniteSkeletalAnnotationPath)
-		{
-			static TSet<FString> LoggedNaniteSkeletalMeshes;
-			if (!LoggedNaniteSkeletalMeshes.Contains(SkeletalMeshComponent->GetName()))
-			{
-				LoggedNaniteSkeletalMeshes.Add(SkeletalMeshComponent->GetName());
-				UE_LOG(LogTemp, Log, TEXT("AirSim Annotation: Skipping Nanite skeletal mesh %s - Nanite skeletal annotation path is disabled."), *SkeletalMeshComponent->GetName());
-			}
-			return nullptr;
-		}
-
 		return CreateSceneProxyNaniteSkeletal(SkeletalMeshComponent);
 	}
 
@@ -548,59 +557,6 @@ FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy(USkeletalMeshCompon
 
 	return nullptr;
 }
-
-FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteSkeletal(USkeletalMeshComponent* SkeletalMeshComponent)
-{
-	if (!IsValid(SkeletalMeshComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreateSceneProxyNaniteSkeletal: SkeletalMeshComponent is invalid"));
-		return nullptr;
-	}
-
-
-	const USkeletalMesh* SkeletalMeshAsset = SkeletalMeshComponent->GetSkeletalMeshAsset();
-	if (!SkeletalMeshAsset || !SkeletalMeshAsset->IsNaniteEnabled())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreateSceneProxyNaniteSkeletal: SkeletalMeshComponent %s does not have valid Nanite skeletal mesh."), *SkeletalMeshComponent->GetName());
-		return nullptr;
-	}
-
-
-	FSkeletalMeshRenderData* SkelMeshRenderData = SkeletalMeshComponent->GetSkeletalMeshRenderData();
-	if (!SkelMeshRenderData || !SkelMeshRenderData->LODRenderData.IsValidIndex(SkeletalMeshComponent->GetPredictedLODLevel()))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreateSceneProxyNaniteSkeletal: Nanite skeletal mesh %s has invalid render data. RenderData=%p, LOD=%d, MaxLOD=%d"), 
-			*SkeletalMeshComponent->GetName(), 
-			SkelMeshRenderData, 
-			SkeletalMeshComponent->GetPredictedLODLevel(),
-			SkelMeshRenderData ? SkelMeshRenderData->LODRenderData.Num() : -1);
-		return nullptr;
-	}
-
-	UMaterialInterface* ProxyMaterial = AnnotationMID;
-	if (!IsValid(ProxyMaterial))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreateSceneProxyNaniteSkeletal: Annotation material instance is invalid for Nanite skeletal mesh %s"),
-			*SkeletalMeshComponent->GetName());
-		return nullptr;
-	}
-
-	FPrimitiveSceneProxy* Proxy = ::new FNaniteSkeletalAnnotationSceneProxy(
-		SkeletalMeshComponent,
-		SkelMeshRenderData,
-		ProxyMaterial
-	);
-
-	static TSet<FString> LoggedNaniteEnabled;
-	if (!LoggedNaniteEnabled.Contains(SkeletalMeshComponent->GetName()))
-	{
-		LoggedNaniteEnabled.Add(SkeletalMeshComponent->GetName());
-		UE_LOG(LogTemp, Log, TEXT("Airsim Annotation: Nanite skeletal annotation proxy enabled for %s"), *SkeletalMeshComponent->GetName());
-	}
-
-	return Proxy;
-}
-
 
 FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxy()
 {
@@ -678,8 +634,10 @@ void UAnnotationComponent::TickComponent(
 	{
 		USceneComponent* ParentComponent = this->GetAttachParent();
 		USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ParentComponent);
-		if (SkeletalMeshComponent && !IsNaniteSkeletalMesh(SkeletalMeshComponent))
+		if (SkeletalMeshComponent)
 		{
+			// Update render state for both regular and Nanite skeletal meshes
+			// This ensures animations and deformations are properly synced
 			MarkRenderStateDirty();
 		}
 	}
@@ -690,4 +648,5 @@ void UAnnotationComponent::ForceUpdate()
 {
 	this->MarkRenderStateDirty();
 }
+
 
