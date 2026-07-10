@@ -1,11 +1,13 @@
-### Development (version 3.4)
-* Added support for Unreal 5.8. This will become the next targeted stable Unreal Engine replacing 5.5 when Cosys-AirSim 3.4 releases.
+### July 2026 (version 3.4)
+* Added support for Unreal 5.8. 
+* Dropped support for LTS Unreal 5.2. Unable to maintain it with available resources right now. 
 * Added unique index to each object name in the annotation system to avoid duplicate name overrides. 
 * Added support with annotation system for (instanced) skeletal nanite meshes. 
 * Updated annotation system to add both actor and component tags to the annotation system for checking if both exist instead of old behaviour where actor tags took priority and component tags would be ignored if both existed.
 * Updated annotation system to stop printing everything to log.
 * Updated default camera to use auto-focus. Manual focus still available through API. 
 * Updated Docker tutorial to work better for recent Unreal versions. 
+* Updated Matlab Toolbox for new toolbox project file structure. 
 * Fixed duplicate indexes for annotation system causing meshes to not show up in annotation masks.
 * Fixed several edge-cases and crashes in annotation system. 
 * Fixed common crash on ending play.
