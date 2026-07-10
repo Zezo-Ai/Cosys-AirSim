@@ -10,6 +10,7 @@
 * Updated Matlab Toolbox for new toolbox project file structure. 
 * Fixed duplicate indexes for annotation system causing meshes to not show up in annotation masks.
 * Fixed several edge-cases and crashes in annotation system. 
+* Fixed GPU LiDAR crashing on Multirotor vehicles by dispatching its scene capture/readback asynchronously to the game thread. GPU LiDAR + Multirotor is allowed in settings.json again as a result. 
 * Fixed common crash on ending play.
 * Fixed incorrect TF-coordinate system for cameras for ROS2 node. 
 * Fixed incorrect TF hierarchy order to world->odom->vehicle->sensors for ROS2 node.
