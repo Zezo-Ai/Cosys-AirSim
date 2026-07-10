@@ -6,8 +6,8 @@ This can be used from source or installed as a toolbox (install from [File Excha
 ## Prerequisites
 
 These instructions are for Matlab 2024a (with toolboxes for the client: Computer Vision, Aerospace, Signal Processing Toolbox) UE 5.X and latest Cosys-AirSim release.
-It also requires the AirSim python package to be installed. 
-For this go into the _PythonClient_ folder and use pip to install it to your python environment that is also used in Matlab with `pip install .`
+It also requires the cosysairsim python package to be installed. You can install the Cosys-AirSim Python client from pip with `pip install cosysairsim`.
+You can also install the AirSim python module to your Python environment by running  `pip install .` in the _PythonClient_ folder.
 You can find out in Matlab what Python version is used with 
 ```matlab
 pe = pyenv;

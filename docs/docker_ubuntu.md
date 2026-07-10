@@ -16,8 +16,8 @@ We've two options for docker. You can either build an image for running [Cosys-A
 ```bash
 cd Airsim/docker;
 python build_airsim_image.py \
-   --base_image=ghcr.io/epicgames/unreal-engine:dev-slim-5.6.1 \
-   --target_image=airsim_binary:dev-slim-5.6.1
+   --base_image=ghcr.io/epicgames/unreal-engine:dev-slim-5.8.0 \
+   --target_image=airsim_binary:dev-slim-5.8.0
 ```
 
 - Verify you have an image by:
@@ -44,9 +44,9 @@ xhost +local:docker
 ```
 
    Do not forget to run the xhost command first to bind the X11 to docker.
-   For Blocks, you can do a `./run_airsim_image_binary.sh airsim_binary:dev-slim-5.6.1 LinuxBlocks/Linux/Blocks.sh -windowed -ResX=1080 -ResY=720`
+   For Blocks, you can do a `./run_airsim_image_binary.sh airsim_binary:dev-slim-5.8.0 LinuxBlocks/Linux/Blocks.sh -windowed -ResX=1080 -ResY=720`
 
-   * `DOCKER_IMAGE_NAME`: Same as `target_image` parameter in previous step. By default, enter `airsim_binary:dev-slim-5.6.1`
+   * `DOCKER_IMAGE_NAME`: Same as `target_image` parameter in previous step. By default, enter `airsim_binary:dev-slim-5.8.0`
    * `UNREAL_BINARY_SHELL_SCRIPT`: for Blocks enviroment, it will be `LinuxBlocks/Linux/Blocks.sh`
    * [`UNREAL_BINARY_ARGUMENTS`](https://docs.unrealengine.com/en-us/Programming/Basics/CommandLineArguments):
       For airsim, most relevant would be `-windowed`, `-ResX`, `-ResY`. Click on link to see all options.
@@ -68,8 +68,8 @@ xhost +local:docker
 $ cd Airsim/docker;
 $ python build_airsim_image.py \
    --source \
-   --base_image ghcr.io/epicgames/unreal-engine:dev-slim-5.6.1 \
-   --target_image=airsim_source:dev-slim-5.6.1
+   --base_image ghcr.io/epicgames/unreal-engine:dev-slim-5.8.0 \
+   --target_image=airsim_source:dev-slim-5.8.0
 ```
 
 #### Running Cosys-AirSim container
@@ -77,7 +77,7 @@ $ python build_airsim_image.py \
 
 ```bash
 xhost +local:docker
-./run_airsim_image_source.sh airsim_source:dev-slim-5.6.1
+./run_airsim_image_source.sh airsim_source:dev-slim-5.8.0
 ```
 
    Syntax is `./run_airsim_image_source.sh DOCKER_IMAGE_NAME`
