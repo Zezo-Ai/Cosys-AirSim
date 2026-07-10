@@ -9,6 +9,9 @@
 * Fixed duplicate indexes for annotation system causing meshes to not show up in annotation masks.
 * Fixed several edge-cases and crashes in annotation system. 
 * Fixed common crash on ending play.
+* Fixed incorrect TF-coordinate system for cameras for ROS2 node. 
+* Fixed incorrect TF hierarchy order to world->odom->vehicle->sensors for ROS2 node.
+* Fixed ROS2 header imports to support newer ROS2 distros such as Jazzy.
 
 
 ### April 2025 (version 3.3)
