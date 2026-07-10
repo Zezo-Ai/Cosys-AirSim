@@ -8,6 +8,7 @@
 * Updated default camera to use auto-focus. Manual focus still available through API. 
 * Updated Docker tutorial to work better for recent Unreal versions. 
 * Updated Matlab Toolbox for new toolbox project file structure. 
+* Updated documentation pages to Material theme of MkDocs for better navigation and readibility. 
 * Fixed duplicate indexes for annotation system causing meshes to not show up in annotation masks.
 * Fixed several edge-cases and crashes in annotation system. 
 * Fixed GPU LiDAR crashing on Multirotor vehicles by dispatching its scene capture/readback asynchronously to the game thread. GPU LiDAR + Multirotor is allowed in settings.json again as a result. 
