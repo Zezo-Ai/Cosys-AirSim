@@ -109,7 +109,7 @@ void RenderRequest::getScreenshot(std::shared_ptr<RenderParams> params[], std::v
         if (params[i]->render_target != nullptr && params[i]->render_component != nullptr) {
             if (!params[i]->pixels_as_float) {
                 if (results[i]->width != 0 && results[i]->height != 0) {
-                    results[i]->image_data_uint8.SetNumUninitialized(results[i]->width * results[i]->height * 3, false);
+                    results[i]->image_data_uint8.SetNumUninitialized(results[i]->width * results[i]->height * 3, EAllowShrinking::No);
                     if (params[i]->compress)
                         UAirBlueprintLib::CompressImageArray(results[i]->width, results[i]->height, results[i]->bmp, results[i]->image_data_uint8);
                     else {
