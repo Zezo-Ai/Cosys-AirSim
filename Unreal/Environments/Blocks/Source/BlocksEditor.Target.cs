@@ -7,7 +7,7 @@ public class BlocksEditorTarget : TargetRules
 {
 	public BlocksEditorTarget(TargetInfo Target) : base(Target)
 	{
-	    DefaultBuildSettings = BuildSettingsVersion.V6;
+	    DefaultBuildSettings = BuildSettingsVersion.V;
         Type = TargetType.Editor;
 		ExtraModuleNames.AddRange(new string[] { "Blocks" });
         IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
