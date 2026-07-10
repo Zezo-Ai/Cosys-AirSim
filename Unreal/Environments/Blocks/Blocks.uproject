@@ -21,10 +21,6 @@
 		{
 			"Name": "ChaosVehiclesPlugin",
 			"Enabled": true
-		},
-		{
-			"Name": "ProceduralVegetationEditor",
-			"Enabled": true
 		}
 	]
 }

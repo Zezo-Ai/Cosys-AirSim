@@ -495,8 +495,13 @@ bool UAnnotationComponent::IsNaniteSkeletalMesh(const USkeletalMeshComponent* Sk
 	{
 		return false;
 	}
-	const USkeletalMesh* SkeletalMeshAsset = SkeletalMeshComponent->GetSkeletalMeshAsset();
-	return SkeletalMeshAsset && SkeletalMeshAsset->IsNaniteEnabled();
+	// USkeletalMesh::IsNaniteEnabled()/NaniteSettings reflect the editor-only build *intent* and are
+	// compiled out entirely in packaged/cooked builds (gated behind WITH_EDITORONLY_DATA), and
+	// USkeletalMesh::HasValidNaniteData() turned out to be private. FSkeletalMeshRenderData's own
+	// HasValidNaniteData() is public and reflects the actual cooked render data, and is available in
+	// every build configuration, so it's used here instead.
+	const FSkeletalMeshRenderData* SkelMeshRenderData = SkeletalMeshComponent->GetSkeletalMeshRenderData();
+	return SkelMeshRenderData && SkelMeshRenderData->HasValidNaniteData();
 }
 
 FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteSkeletal(USkeletalMeshComponent* SkeletalMeshComponent)
@@ -537,8 +542,10 @@ FPrimitiveSceneProxy* UAnnotationComponent::CreateSceneProxyNaniteInstancedSkele
 	{
 		return nullptr;
 	}
-	const USkeletalMesh* SkeletalMeshAsset = Cast<USkeletalMesh>(InstancedMeshComponent->GetSkinnedAsset());
-	if (!SkeletalMeshAsset || !SkeletalMeshAsset->IsNaniteEnabled())
+	// See the comment in IsNaniteSkeletalMesh() above: FSkeletalMeshRenderData::HasValidNaniteData()
+	// (already fetched above as SkelMeshRenderData) is used instead of the editor-only/private
+	// USkeletalMesh accessors so this also compiles/works in packaged builds.
+	if (!SkelMeshRenderData->HasValidNaniteData())
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("AirSim Annotation: Skipping non-Nanite instanced skinned mesh %s"), *InstancedMeshComponent->GetName());
 		return nullptr;
