@@ -1,6 +1,7 @@
 ### Development (version 3.4)
-* Added support for Unreal 5.6. This will become the next targeted stable Unreal Engine replacing 5.5 when Cosys-AirSim 3.4 releases.
+* Added support for Unreal 5.8. This will become the next targeted stable Unreal Engine replacing 5.5 when Cosys-AirSim 3.4 releases.
 * Added unique index to each object name in the annotation system to avoid duplicate name overrides. 
+* Added support with annotation system for (instanced) skeletal nanite meshes. 
 * Updated annotation system to add both actor and component tags to the annotation system for checking if both exist instead of old behaviour where actor tags took priority and component tags would be ignored if both existed.
 * Updated annotation system to stop printing everything to log.
 * Updated default camera to use auto-focus. Manual focus still available through API. 
@@ -67,7 +68,7 @@
 * Updated to be compatible with Unreal 5.3. 
     * Note that 5.3 breaks debug rendering! Disable it to avoid issues in editor. [Fixed in 5.4](https://issues.unrealengine.com/issue/UE-199454)
     * Note that 5.3 and higher requires _r.DetailMode 2_ console command or scalability settings to be set to Epic to avoid issues with rendering the RGB scene camera sensor. More info [here](docs/unreal_custenv.md#unreal-scene-camera-bug).
-* Updated [ROS2 wrapper](docs/ros_cplusplus.md) to support Cosys-AirSim features and fix several issues:
+* Updated [ROS2 wrapper](docs/ros2.md) to support Cosys-AirSim features and fix several issues:
     * Added support for annotation cameras.
     * Added support for GPU-Lidar and Echos sensors.
     * Added support for ground truth labels of Lidar sensor.
