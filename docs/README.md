@@ -10,11 +10,8 @@ Please note that we use that same [MIT license](https://github.com/Cosys-Lab/Cos
 Do note that this repository is provided as is, will not be actively updated and comes without warranty or support. 
 Please contact a Cosys-Lab researcher to get more in depth information on which branch or version is best for your work.
 
-This documentation is for this particular branch only and is best read from the source documentation files. 
-For the latest stable versions see the [main branch](https://github.com/Cosys-Lab/Cosys-AirSim/tree/main), 
-these are maintained for support, and is available for builds in the [releases](https://github.com/Cosys-Lab/Cosys-AirSim/releases). 
-The documentation for the latest stable version can be read online [here](https://cosys-lab.github.io/Cosys-AirSim/).
-
+This [5.8 dev branch](https://github.com/Cosys-Lab/Cosys-AirSim/tree/5.8dev) is for the development of Cosys-AirSim on Unreal Engine v5.8.0. The documentation is best read from [source](https://github.com/Cosys-Lab/Cosys-AirSim/tree/5.8dev/docs).
+For the latest stable and maintained build for a recent Unreal Engine see the [main branch](https://github.com/Cosys-Lab/Cosys-AirSim/tree/main) and associated builds in the [releases](https://github.com/Cosys-Lab/Cosys-AirSim/releases).
 
 ## Associated publications
 
@@ -25,10 +22,7 @@ The documentation for the latest stable version can be read online [here](https:
   booktitle={2023 Annual Modeling and Simulation Conference (ANNSIM)}, 
   title={COSYS-AIRSIM: A Real-Time Simulation Framework Expanded for Complex Industrial Applications}, 
   year={2023},
-  volume={},
-  number={},
-  pages={37-48},
-  doi={}}
+  doi={https://doi.org/10.48550/arXiv.2303.13381}}
 ```
 
 You can also find the presentation of the live tutorial of Cosys-AirSim at ANNSIM '23 conference [here](https://github.com/Cosys-Lab/Cosys-AirSim/tree/main/docs/annsim23_tutorial) together with the associated videos.
@@ -41,8 +35,6 @@ You can also find the presentation of the live tutorial of Cosys-AirSim at ANNSI
   booktitle={2022 IEEE Sensors}, 
   title={Physical LiDAR Simulation in Real-Time Engine}, 
   year={2022},
-  volume={},
-  number={},
   pages={1-4},
   doi={10.1109/SENSORS52175.2022.9967197}}
 }
@@ -79,7 +71,7 @@ You can also find the presentation of the live tutorial of Cosys-AirSim at ANNSI
 * Updated sensors like cameras, Echo sensor and GPU-LiDAR to ignore certain objects with the _MarkedIgnore_ Unreal tag and enabling the "IgnoreMarked" setting in [the settings file](https://cosys-lab.github.io/Cosys-AirSim/settings).
 * Updated cameras sensor with more distortion features such as chromatic aberration, motion blur and lens distortion. 
 * Updated Python [ROS implementation](https://cosys-lab.github.io/Cosys-AirSim/ros_python) with completely new implementation and feature set.
-* Updated C++ [ROS2 implementation](https://cosys-lab.github.io/Cosys-AirSim/ros_cplusplus) to support custom Cosys-AirSim features.
+* Updated C++ [ROS2 implementation](https://cosys-lab.github.io/Cosys-AirSim/ros2) to support custom Cosys-AirSim features.
 * Dropped support for Unity Environments.
 
 Some more details on our changes can be found in the [changelog](https://github.com/Cosys-Lab/Cosys-AirSim/blob/main/CHANGELOG.md).
