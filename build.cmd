@@ -10,12 +10,12 @@ set "buildMode="
 REM //check VS version
 if "%VisualStudioVersion%" == "" (
     echo(
-    echo oh oh... You need to run this command from x64 Native Tools Command Prompt for VS 2022.
+    echo oh oh... You need to run this command from x64 Native Tools Command Prompt for VS 2026.
     goto :buildfailed_nomsg
 )
 if "%VisualStudioVersion%" lss "17.0" (
     echo(
-    echo Hello there! We just upgraded AirSim to Unreal Engine 5.4 and Visual Studio 2022.
+    echo Hello there! We just upgraded AirSim to Unreal Engine 5.8 and Visual Studio 2026.
     echo Here are few easy steps for upgrade so everything is new and shiny:
     echo https://github.com/Cosys-Lab/Cosys-AirSim/blob/main/docs/unreal_upgrade.md
     goto :buildfailed_nomsg

@@ -30,43 +30,6 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     brew update
     # Update below line for newer versions
     brew install llvm@8
-else #linux
-    sudo apt-get update
-    sudo apt-get -y install --no-install-recommends \
-        lsb-release \
-        rsync \
-        software-properties-common \
-        wget \
-        libvulkan1 \
-        vulkan-tools
-
-    #install clang and build tools
-    VERSION=$(lsb_release -rs | cut -d. -f1)
-    # Since Ubuntu 17 clang is part of the core repository
-    # See https://packages.ubuntu.com/search?keywords=clang-8
-    # if [ "$VERSION" -lt "17" ]; then
-    #     wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-    #     sudo apt-get update
-    # fi
-    if [ "$VERSION" -eq "20" ]; then
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt update
-        sudo apt-get install -y build-essential cmake clang clang-12 clang++-12 libc++-12-dev libc++abi-12-dev libstdc++-13-dev
-
-        # configure update-alternatives for clang
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-12 1000
-        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-12   1000
-        sudo update-alternatives --install /usr/bin/ld.lld  ld.lld  /usr/bin/ld.lld-12  1000
-        sudo update-alternatives --install /usr/bin/cc      cc      /usr/bin/clang++-12 1000
-    fi
-    if [ "$VERSION" -eq "22" ]; then
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt update
-        sudo apt-get install -y build-essential cmake clang clang-14 clang++-14 libc++-14-dev libc++abi-14-dev libstdc++-13-dev
-    fi
-    if [ "$VERSION" -eq "24" ]; then
-        sudo apt-get install -y build-essential cmake clang clang-18 clang++-18 libc++-18-dev libc++abi-18-dev libstdc++-13-dev
-    fi
 fi
 
 if ! which cmake; then
@@ -106,42 +69,7 @@ else #linux
     # install additional tools
     sudo apt-get install -y unzip
 
-    if version_less_than_equal_to $cmake_ver $MIN_CMAKE_VERSION; then
-        # in ubuntu 18 docker CI, avoid building cmake from scratch to save time
-        # ref: https://apt.kitware.com/
-        if [ "$(lsb_release -rs)" == "18.04" ]; then
-            sudo apt-get -y install \
-                apt-transport-https \
-                ca-certificates \
-                gnupg
-            wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-            sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-            sudo apt-get -y install --no-install-recommends \
-                make \
-                cmake
-
-        else
-            # For Ubuntu 16.04, or anything else, build CMake 3.10.2 from source
-            if [[ ! -d "cmake_build/bin" ]]; then
-                echo "Downloading cmake..."
-                wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz \
-                    -O cmake.tar.gz
-                tar -xzf cmake.tar.gz
-                rm cmake.tar.gz
-                rm -rf ./cmake_build
-                mv ./cmake-3.10.2 ./cmake_build
-                pushd cmake_build
-                ./bootstrap
-                make
-                popd
-            fi
-        fi
-
-    else
-        echo "Already have good version of cmake: $cmake_ver"
-    fi
-
-fi # End USB setup, CMake install
+fi # End USB setup
 
 
 # Download rpclib

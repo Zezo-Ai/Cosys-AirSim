@@ -1,5 +1,5 @@
 # Cosys-AirSim on Docker in Linux
-We've two options for docker. You can either build an image for running [Cosys-AirSim binaries](#runtime-binaries), or for compiling Cosys-AirSim [from source](#source).
+We've two options for docker. You can either build an image for running [Cosys-AirSim binaries](#packaged-runtime-binaries), or for compiling Cosys-AirSim [from source](#source).
 
 ## Packaged runtime Binaries
 
@@ -16,8 +16,8 @@ We've two options for docker. You can either build an image for running [Cosys-A
 ```bash
 cd Airsim/docker;
 python build_airsim_image.py \
-   --base_image=ghcr.io/epicgames/unreal-engine:dev-slim-5.5.4 \
-   --target_image=airsim_binary:dev-slim-5.5.4
+   --base_image=ghcr.io/epicgames/unreal-engine:dev-slim-5.8.0 \
+   --target_image=airsim_binary:dev-slim-5.8.0
 ```
 
 - Verify you have an image by:
@@ -44,10 +44,9 @@ xhost +local:docker
 ```
 
    Do not forget to run the xhost command first to bind the X11 to docker.
-   For Blocks, you can do a `./run_airsim_image_binary.sh airsim_binary:dev-slim-5.5.4 LinuxBlocks/Linux/Blocks.sh -windowed -ResX=1080 -ResY=720`
-`
+   For Blocks, you can do a `./run_airsim_image_binary.sh airsim_binary:dev-slim-5.8.0 LinuxBlocks/Linux/Blocks.sh -windowed -ResX=1080 -ResY=720`
 
-   * `DOCKER_IMAGE_NAME`: Same as `target_image` parameter in previous step. By default, enter `airsim_binary:dev-slim-5.5.4`
+   * `DOCKER_IMAGE_NAME`: Same as `target_image` parameter in previous step. By default, enter `airsim_binary:dev-slim-5.8.0`
    * `UNREAL_BINARY_SHELL_SCRIPT`: for Blocks enviroment, it will be `LinuxBlocks/Linux/Blocks.sh`
    * [`UNREAL_BINARY_ARGUMENTS`](https://docs.unrealengine.com/en-us/Programming/Basics/CommandLineArguments):
       For airsim, most relevant would be `-windowed`, `-ResX`, `-ResY`. Click on link to see all options.
@@ -69,8 +68,8 @@ xhost +local:docker
 $ cd Airsim/docker;
 $ python build_airsim_image.py \
    --source \
-   --base_image ghcr.io/epicgames/unreal-engine:dev-slim-5.5.4 \
-   --target_image=airsim_source:dev-slim-5.5.4
+   --base_image ghcr.io/epicgames/unreal-engine:dev-slim-5.8.0 \
+   --target_image=airsim_source:dev-slim-5.8.0
 ```
 
 #### Running Cosys-AirSim container
@@ -78,7 +77,7 @@ $ python build_airsim_image.py \
 
 ```bash
 xhost +local:docker
-./run_airsim_image_source.sh airsim_source:dev-slim-5.5.4
+./run_airsim_image_source.sh airsim_source:dev-slim-5.8.0
 ```
 
    Syntax is `./run_airsim_image_source.sh DOCKER_IMAGE_NAME`
@@ -87,6 +86,7 @@ xhost +local:docker
 * Inside the container, you can see `UnrealEngine` and `Cosys-AirSim` under `/home/ue4`.
 * Start unreal engine inside the container:
    `/home/ue4/UnrealEngine/Engine/Binaries/Linux/UnrealEditor`
+* The image builds AirLib with `./build.sh --ue-root /home/ue4/UnrealEngine` (see [Linux build docs](install_linux.md#build-cosys-airsim)) so that AirLib is linked with Unreal's own bundled Clang toolchain instead of the container's system compiler, avoiding ABI mismatches when building the Unreal plugin. The image also sets the `UE_ROOT` environment variable to `/home/ue4/UnrealEngine`, so if you make code changes and re-run `./build.sh` manually inside the container it will keep using the correct toolchain automatically.
 * [Specifying an airsim settings.json](#specifying-settingsjson)
 * Continue with [Cosys-AirSims's Linux docs](install_linux.md#build-unreal-environment).
   For example start the Blocks environment in the container run (This will first copy the plugin and afterwards start open the project with the Unreal Editor):

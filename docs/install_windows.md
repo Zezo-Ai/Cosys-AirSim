@@ -1,15 +1,15 @@
-# Install or Build Cosys-AirSim on Windows
+# Build Cosys-AirSim on Windows from Source
 
 ## Install Unreal Engine
 1. [Download](https://www.unrealengine.com/download) the Epic Games Launcher. While the Unreal Engine is open source and free to download, registration is still required.
 2. Run the Epic Games Launcher, open the `Unreal Engine` tab on the left pane.
-Click on the `Install` button on the top right, which should show the option to download **Unreal Engine 5.5.X**. Chose the install location to suit your needs, as shown in the images below. If you have multiple versions of Unreal installed then **make sure the version you are using is set to `current`** by clicking down arrow next to the Launch button for the version.
+Click on the `Install` button on the top right, which should show the option to download **Unreal Engine 5.8.X**. Chose the install location to suit your needs, as shown in the images below. If you have multiple versions of Unreal installed then **make sure the version you are using is set to `current`** by clicking down arrow next to the Launch button for the version.
 ![Unreal Engine Tab UI Screenshot](images/ue_install.png)
 ![Unreal Engine Install Location UI Screenshot](images/ue_install_location.png)
 
 ## Build Cosys-AirSim
-* Install Visual Studio 2022. Make sure to select Desktop Development with C++ and Windows 10/11 SDK **10.0.X (choose latest)** and select the latest .NET Framework SDK under the 'Individual Components' tab while installing VS 2022. More info [here](https://dev.epicgames.com/documentation/en-us/unreal-engine/setting-up-visual-studio-development-environment-for-cplusplus-projects-in-unreal-engine?application_version=5.4).
-* Start `Developer Command Prompt for VS 2022`. 
+* Install Visual Studio 2026. Make sure to select Desktop Development with C++ and Windows 10/11 SDK **10.0.X (choose latest)** and select the latest .NET Framework SDK under the 'Individual Components' tab while installing VS 2026. More info [here](https://dev.epicgames.com/documentation/en-us/unreal-engine/setting-up-visual-studio-development-environment-for-cplusplus-projects-in-unreal-engine?application_version=5.8).
+* Start `Developer Command Prompt for VS 2026`. 
 * Clone the repo: `git clone https://github.com/Cosys-Lab/Cosys-AirSim.git`, and go the AirSim directory by `cd Cosys-AirSim`. 
 * Run `build.cmd` from the command line. This will create ready to use plugin bits in the `Unreal\Plugins` folder that can be dropped into any Unreal project.
 
@@ -19,13 +19,12 @@ Finally, you will need an Unreal project that hosts the environment for your veh
 
 ## Setup Remote Control (Multirotor only)
 
-A remote control is required if you want to fly manually. See the [remote control setup](remote_control.md) for more details.
-
+A remote control is required if you want to fly the drone manually. See the [remote control setup](remote_control.md) for more details.
 Alternatively, you can use [APIs](apis.md) for programmatic control or use the so-called [Computer Vision mode](image_apis.md) to move around using the keyboard.
 
 ## How to Use Cosys-AirSim
 
-Once Cosys-AirSim is set up by following above steps, you can,
+Once Cosys-AirSim is set up by following above steps, for launching and building it through Visual Studio you can,
 1. Navigate to folder `Unreal\Environments\Blocks` and run `update_from_git.bat`.
 2. Double click on .sln file to load the Blocks project in `Unreal\Environments\Blocks` (or .sln file in your own [custom](unreal_custenv.md) Unreal project). If you don't see .sln file then you probably haven't completed steps in Build Unreal Project section above.
 3. Select your Unreal project as Start Up project (for example, Blocks project) and make sure Build config is set to "Develop Editor" and x64.
@@ -34,7 +33,10 @@ Once Cosys-AirSim is set up by following above steps, you can,
 !!! tip
     Go to 'Edit->Editor Preferences', in the 'Search' box type 'CPU' and ensure that the 'Use Less CPU when in Background' is unchecked.
 
+You can install the Cosys-AirSim Python client from pip with `pip install cosysairsim`.
 See [Using APIs](apis.md) and [settings.json](settings.md) for various options available.
+
+Alternatively you can also simply open the Unreal Engine project by double clicking the _Blocks.uproject_ file.
 
 # FAQ
 
@@ -51,7 +53,6 @@ Open or create a file called `BuildConfiguration.xml` in _C:\Users\USERNAME\AppD
 </WindowsPlatform>
 </Configuration>
 ```
-
 
 #### I get `error C100 : An internal error has occurred in the compiler` when running build.cmd
 We have noticed this happening with VS version `15.9.0` and have checked-in a workaround in Cosys-AirSim code. If you have this VS version, please make sure to pull the latest Cosys-AirSim code.
