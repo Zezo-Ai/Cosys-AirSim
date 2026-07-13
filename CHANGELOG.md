@@ -1,6 +1,6 @@
 ### July 2026 (version 3.4)
-* Added support for Unreal 5.8. 
-* Dropped support for LTS Unreal 5.2. Unable to maintain it with available resources right now. 
+* The latest available stable Unreal Engine version that is now targeted for release is 5.8. This means the previous 5.5 branch will no longer be receive updates or be actively maintained. 
+* Removed prebuild versions of 5.2.1 LTS version. This branch is still updated and maintained but has to be used from source. 
 * Added unique index to each object name in the annotation system to avoid duplicate name overrides. 
 * Added support with annotation system for (instanced) skeletal nanite meshes. 
 * Updated annotation system to add both actor and component tags to the annotation system for checking if both exist instead of old behaviour where actor tags took priority and component tags would be ignored if both existed.
