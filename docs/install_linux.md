@@ -18,14 +18,6 @@ You will need the following dependencies. Newer versions may also work but are n
 - wget
 - unzip
 
-Unreal Engine requires a correct version of the compiler toolchain clang. You can find the right version on [this page](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine#gettingthetoolchain) for the Unreal version you wish to install.
-To easily install this version on your machine, you can use the following script:
-```bash
-wget https://apt.llvm.org/llvm.sh
-chmod +x llvm.sh
-sudo ./llvm.sh <version number>
-```
-
 ## Install Unreal Engine
 Download the latest version of Unreal Engine 5.8.X from the [official download page](https://www.unrealengine.com/en-US/linux). 
 This will require an Epic Games account. Once the zip archive is downloaded you can extract it to where you want to install the Unreal Engine.
