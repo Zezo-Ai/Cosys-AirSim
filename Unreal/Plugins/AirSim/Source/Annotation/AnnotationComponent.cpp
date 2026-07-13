@@ -13,6 +13,7 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "Runtime/Engine/Public/MaterialShared.h"
 #include "Runtime/Engine/Classes/Engine/Engine.h"
+#include "SceneView.h"
 #include "AirBlueprintLib.h"
 
 #if ENGINE_MAJOR_VERSION >= 5
