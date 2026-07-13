@@ -8,6 +8,7 @@
 * Updated default camera to use auto-focus. Manual focus still available through API. 
 * Updated Docker tutorial to work better for recent Unreal versions. 
 * Updated Matlab Toolbox for new toolbox project file structure. 
+* Updated Linux installation from source to more easily target against the Clang shipped with Unreal Engine itself. 
 * Updated documentation pages to Material theme of MkDocs for better navigation and readibility. 
 * Fixed duplicate indexes for annotation system causing meshes to not show up in annotation masks.
 * Fixed several edge-cases and crashes in annotation system. 
