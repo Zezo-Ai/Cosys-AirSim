@@ -42,7 +42,7 @@ Alternatively you can also simply open the Unreal Engine project by double click
 
 
 #### I get an error `Il ‘P1’, version ‘X’, does not match ‘P2’, version ‘X’`
-This is caused by multiple versions of Visual Studio installed on the machine. The build script of Cosys-AirSim will use the latest versions it can find so need to make Unreal does the same.
+This is caused by having multiple MSVC toolset versions installed, where Unreal and the prebuilt AirLib/MavLinkCom libraries were compiled with different ones. The build script of Cosys-AirSim will use the latest MSVC toolset it can find, so you need to make Unreal do the same (or vice versa, see below).
 Open or create a file called `BuildConfiguration.xml` in _C:\Users\USERNAME\AppData\Roaming\Unreal Engine\UnrealBuildTool_ and add the following:
 
 ```xml
@@ -52,6 +52,23 @@ Open or create a file called `BuildConfiguration.xml` in _C:\Users\USERNAME\AppD
 <CompilerVersion>Latest</CompilerVersion>
 </WindowsPlatform>
 </Configuration>
+```
+
+#### I get `error C4668: '__has_feature' is not defined as a preprocessor macro` (or "Detected compiler newer than Visual Studio 2022, please update min version checking...") when building with UE 5.2
+This means Visual Studio has auto-updated to an MSVC toolset that is newer than what UE was built to support.
+
+To fix it:
+1. Open the Visual Studio Installer and, under "Individual components", install an older MSVC toolset that UE supports alongside your current one (multiple toolset versions can be installed side by side). Note the exact version number of the folder it installs, e.g. `14.38.33130`, under `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\`.
+2. In `BuildConfiguration.xml` (see above), pin `CompilerVersion` to that exact installed version instead of `Latest`, e.g.:
+```xml
+<WindowsPlatform>
+<CompilerVersion>14.38.33130</CompilerVersion>
+</WindowsPlatform>
+```
+3. Since the prebuilt `AirLib`/`MavLinkCom`/rpclib libraries were likely compiled with the newer (too-new) toolset, rebuild them with the same pinned toolset to avoid the IL mismatch error above. Simply setting `VCToolsVersion` or running from a specific Developer Command Prompt is **not** enough by itself. `build.cmd` reads an optional `AIRSIM_VCTOOLSVERSION` environment variable and passes it through correctly to both. From **Developer Command Prompt for VS 202X**, run `clean.cmd` followed by:
+```bat
+set AIRSIM_VCTOOLSVERSION=14.38.33130
+build.cmd
 ```
 
 #### I get `error C100 : An internal error has occurred in the compiler` when running build.cmd
