@@ -89,7 +89,7 @@ objectPoseWorld = airSimClient.getObjectPose(chosenObject, false);
 
 figure;
 subplot(1, 2, 1);
-plotTransforms([vehiclePoseLocal.position; objectPoseLocal.position], [vehiclePoseLocal.orientation; objectPoseLocal.orientation], FrameLabel=["Vehicle"; finalName], AxisLabels="on")
+plotTransforms([vehiclePoseLocal.position; objectPoseLocal.position], [vehiclePoseLocal.orientation; objectPoseLocal.orientation], FrameLabel=["Vehicle"; chosenObject], AxisLabels="on")
 axis equal;
 grid on;
 xlabel("X (m)")
@@ -98,7 +98,7 @@ zlabel("Z (m)")
 title("Local Plot")
 
 subplot(1, 2, 2);
-plotTransforms([vehiclePoseWorld.position; objectPoseWorld.position], [vehiclePoseWorld.orientation; objectPoseWorld.orientation], FrameLabel=["Vehicle"; finalName], AxisLabels="on")
+plotTransforms([vehiclePoseWorld.position; objectPoseWorld.position], [vehiclePoseWorld.orientation; objectPoseWorld.orientation], FrameLabel=["Vehicle"; chosenObject], AxisLabels="on")
 
 axis equal;
 grid on;
@@ -236,20 +236,16 @@ cameraSensorName = "front_center";
 [rgbImage, rgbCameraIimestamp] = airSimClient.getCameraImage(cameraSensorName, AirSimCameraTypes.Scene, vehicle_name);
 [segmentationImage, segmentationCameraIimestamp] = airSimClient.getCameraImage(cameraSensorName, AirSimCameraTypes.Segmentation,vehicle_name);
 [depthImage, depthCameraIimestamp] = airSimClient.getCameraImage(cameraSensorName, AirSimCameraTypes.DepthPlanar,vehicle_name);
-[annotationImage, annotationCameraIimestamp] = airSimClient.getCameraImage(cameraSensorName, AirSimCameraTypes.Annotation, vehicle_name, "TextureTestDirect");
 figure;
-subplot(4, 1, 1);
+subplot(3, 1, 1);
 imshow(rgbImage)
 title("RGB Camera Image")
-subplot(4, 1, 2);
+subplot(3, 1, 2);
 imshow(segmentationImage)
 title("Segmentation Camera Image")
-subplot(4, 1, 3);
+subplot(3, 1, 3);
 imshow(depthImage ./ max(max(depthImage)).* 255, gray)
 title("Depth Camera Image")
-subplot(4, 1, 4);
-imshow(annotationImage)
-title("Annotation Camera Image")
 drawnow
 ```
 
@@ -261,21 +257,18 @@ drawnow
 
 cameraSensorName = "front_center";
 [images, cameraIimestamp] = airSimClient.getCameraImages(cameraSensorName, ...
-                                                         [AirSimCameraTypes.Scene, AirSimCameraTypes.Segmentation, AirSimCameraTypes.DepthPlanar, AirSimCameraTypes.Annotation], ...
-                                                         vehicle_name, ["", "", "", "TextureTestDirect"]);
+                                                         [AirSimCameraTypes.Scene, AirSimCameraTypes.Segmentation, AirSimCameraTypes.DepthPlanar], ...
+                                                         vehicle_name, ["", "", ""]);
 figure;
-subplot(4, 1, 1);
+subplot(3, 1, 1);
 imshow(images{1})
 title("Synced RGB Camera Image")
-subplot(4, 1, 2);
+subplot(3, 1, 2);
 imshow(images{2})
 title("Synced Segmentation Camera Image")
-subplot(4, 1, 3);
+subplot(3, 1, 3);
 imshow(images{3} ./ max(max(images{3})).* 255, gray)
 title("Synced Depth Camera Image")
-subplot(4, 1, 4);
-imshow(images{4})
-title("Synced Annotation Camera Image")
 drawnow
 ```
 
