@@ -86,7 +86,6 @@ private:
 	EFoliageComponentType last_foliage_type_;
 
 	static EFoliageComponentType ClassifyFoliageType(const USceneComponent* Component);
-	static bool IsNaniteSkeletalMesh(const USkeletalMeshComponent* SkeletalMeshComponent);
 	FPrimitiveSceneProxy* CreateSceneProxy(UStaticMeshComponent* StaticMeshComponent);
 	FPrimitiveSceneProxy* CreateSceneProxy(USkeletalMeshComponent* SkeletalMeshComponent);
 	FPrimitiveSceneProxy* CreateSceneProxyNaniteSkeletal(USkeletalMeshComponent* SkeletalMeshComponent);
