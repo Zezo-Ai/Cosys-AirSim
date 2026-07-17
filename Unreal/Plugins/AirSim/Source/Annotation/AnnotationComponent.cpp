@@ -513,7 +513,7 @@ UAnnotationComponent::EFoliageComponentType UAnnotationComponent::ClassifyFoliag
 	const bool bInstancedSkeletalLike =
 		ClassName.Contains(TEXT("instancedskeletal")) ||
 		ClassName.Contains(TEXT("instancedskinned")) ||
-		ClassName.Contains(TEXT("instanced")) && (ClassName.Contains(TEXT("skeletal")) || ClassName.Contains(TEXT("skinned"))) ||
+		(ClassName.Contains(TEXT("instanced")) && (ClassName.Contains(TEXT("skeletal")) || ClassName.Contains(TEXT("skinned")))) ||
 		ComponentName.Contains(TEXT("instancedskeletal")) ||
 		ComponentName.Contains(TEXT("instancedskinned"));
 
